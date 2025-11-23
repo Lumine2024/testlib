@@ -5403,7 +5403,11 @@ void println(const T &x) {
 template<class T1, class T2, class ... Args>
 void println(const T1 &x, const T2 &y, Args &&... args);
 
-template<bool is_range> struct __testlib_println_impl {
+template<bool is_range>
+struct __testlib_println_impl;
+
+template<>
+struct __testlib_println_impl<true> {
     template<class T1, class T2, class ... Args>
     static void run(const T1 &x, const T2 &y, Args &&... args) {
         T2 i = static_cast<T2>(x);
@@ -5413,16 +5417,17 @@ template<bool is_range> struct __testlib_println_impl {
             i++;
         }
         std::cout << " ";
-        println(args...);
+        println(std::forward<Args>(args)...);
     }
 };
 
-template<> struct __testlib_println_impl<false> {
+template<>
+struct __testlib_println_impl<false> {
     template<class T1, class T2, class ... Args>
     static void run(const T1 &x, const T2 &y, Args &&... args) {
         __testlib_print_one(x);
         std::cout << " ";
-        println(y, args...);
+        println(y, std::forward<Args>(args)...);
     }
 };
 
