@@ -5400,26 +5400,36 @@ void println(const T &x) {
     std::cout << std::endl;
 }
 
-
 template<class T1, class T2, class ... Args>
-typename __testlib_enable_if<(is_iterator<T1>::value && is_iterator<T2>::value && std::is_convertible<T1, T2>::value), void>::type
-println(const T1 &x, const T2 &y, Args &&... args) {
-    T2 i = static_cast<T2>(x);
-    while(i != y) {
-        __testlib_print_one(*i);
+void println(const T1 &x, const T2 &y, Args &&... args);
+
+template<bool is_range> struct __testlib_println_impl {
+    template<class T1, class T2, class ... Args>
+    static void run(const T1 &x, const T2 &y, Args &&... args) {
+        T2 i = static_cast<T2>(x);
+        while(i != y) {
+            __testlib_print_one(*i);
+            std::cout << " ";
+            i++;
+        }
         std::cout << " ";
-        i++;
+        println(args...);
     }
-    std::cout << " ";
-    println(args...);
-}
+};
+
+template<> struct __testlib_println_impl<false> {
+    template<class T1, class T2, class ... Args>
+    static void run(const T1 &x, const T2 &y, Args &&... args) {
+        __testlib_print_one(x);
+        std::cout << " ";
+        println(y, args...);
+    }
+};
 
 template<class T1, class T2, class ... Args>
-typename __testlib_enable_if<!(is_iterator<T1>::value && is_iterator<T2>::value && std::is_convertible<T1, T2>::value), void>::type
-println(const T1 &x, const T2 &y, Args &&... args) {
-    __testlib_print_one(x);
-    std::cout << " ";
-    println(y, args...);
+void println(const T1 &x, const T2 &y, Args &&... args) {
+    constexpr bool is_range = is_iterator<T1>::value && is_iterator<T2>::value && std::is_convertible<T1, T2>::value;
+    __testlib_println_impl<is_range>::run(x, y, args...);
 }
 
 /* opts */
