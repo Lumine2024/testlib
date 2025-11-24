@@ -31,4 +31,6 @@ int main(int argc, char** argv) {
     
     // Test empty output
     println("");
+    
+    return 0;
 }
